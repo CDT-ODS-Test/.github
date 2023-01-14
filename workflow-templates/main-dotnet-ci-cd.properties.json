@@ -1,0 +1,13 @@
+{
+    "name": "CDT-ODS Main Branch .Net app w/ EF Core Database",
+    "description": "CDT-ODS CI/CD starter workflow for main branch .Net app w/ EF Core.",
+    "categories": [
+        "AspNetCore",
+        "continuous-integration",
+        "deployment"
+    ],
+    "filePatterns": [
+        "^Dockerfile",
+        ".*\\.md$"
+    ]
+}
