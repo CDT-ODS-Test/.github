@@ -1,0 +1,35 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Dev .Net app w/ EF Core Database
+
+on:
+  push:
+    branches: [ "dev" ]
+  workflow_dispatch:
+    branches: ["dev"]   
+
+jobs:
+  build:
+    uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-app-and-db-build-test.yml@main
+    with:
+      dotnet-version: '6.0.x'
+      build-configuration: Release
+      startup-project-folder-path: src/Api
+      efcore-target-project-folder-path: src/Infrastructure
+      efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
+      build-artifact-name: ${{ vars.BUILD_ARTIFACT_NAME }}
+  
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-deploy-app-and-database.yml@main
+    with:
+      az-appservice-name: app-dot-net-api
+      az-appservice-slot-name: dev
+      efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
+      deployment-environment: development
+      az-keyvault-name: 'KEYVAULT_NAME'
+      az-keyvault-dbcontext-secret-name: 'KEYVAULT_SECRET_NAME'
+      build-artifact-name: ${{ vars.BUILD_ARTIFACT_NAME }}
+    secrets: inherit
