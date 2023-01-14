@@ -25,7 +25,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-deploy-app-and-database.yml@main
     with:
-      az-appservice-name: app-dot-net-api
+      az-appservice-name: 'APP_SERVICE_NAME'
       az-appservice-slot-name: dev
       efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
       deployment-environment: development
