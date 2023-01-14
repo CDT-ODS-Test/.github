@@ -1,0 +1,54 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: CDT-ODS Main Branch .Net app w/ EF Core Database
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  ### Job 1 - Build artifacts 
+  build:
+    uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-app-and-db-build-test.yml@main
+    with:
+      dotnet-version: '6.0.x'
+      build-configuration: Release
+      startup-project-folder-path: src/Api
+      efcore-target-project-folder-path: src/Infrastructure
+      efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
+      build-artifact-name: ${{ vars.BUILD_ARTIFACT_NAME }}
+  
+  ### Job 2 - Deploy artifacts to staging
+  deploy_to_staging:  ### Job 2 - Deploy artifacts to staging
+    needs: build
+    if: github.event_name != 'pull_request'
+    uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-deploy-app-and-database.yml@main
+    with:
+      az-appservice-name: 'APP_SERVICE_NAME'
+      az-appservice-slot-name: staging
+      efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
+      deployment-environment: staging
+      az-keyvault-name: 'KEYVAULT_NAME'
+      az-keyvault-dbcontext-secret-name: 'KEYVAULT_SECRET_NAME'
+      build-artifact-name: ${{ vars.BUILD_ARTIFACT_NAME }}
+    secrets: inherit 
+  
+  ### Job 3 - Deploy artifacts to production
+  deploy_to_prod:   
+    needs: [build, deploy_to_staging]
+    if: github.event_name != 'pull_request'
+    uses: CDT-ODS-DevSecOps/reusable-workflows/.github/workflows/dotnet-deploy-app-and-database.yml@main
+    with:
+      az-appservice-name: 'APP_SERVICE_NAME'
+      az-appservice-slot-name: production
+      efcore-migration-sql-filename: ${{ vars.EFCORE_SQL_FILENAME }}
+      deployment-environment: production
+      az-keyvault-name: 'KEYVAULT_NAME'
+      az-keyvault-dbcontext-secret-name: 'KEYVAULT_SECRET_NAME'
+      build-artifact-name: ${{ vars.BUILD_ARTIFACT_NAME }}
+    secrets: inherit
+    
