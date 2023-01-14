@@ -1,5 +1,5 @@
 {
-    "name": "CDT-ODS Dev .Net app w/ EF Core Database",
+    "name": "CDT-ODS Dev Branch .Net app w/ EF Core Database",
     "description": "CDT-ODS CI/CD starter workflow for .Net app w/ EF Core.",
     "categories": [
         "AspNetCore",
